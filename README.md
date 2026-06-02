@@ -563,30 +563,3 @@ docker compose exec postgres psql -U postgres -d tp_microservices \
 | GraphQL `@as-integrations/express5 missing` | Dependency not installed | `pnpm add @as-integrations/express5` (already in `package.json`) |
 | Notification never logs a consume | Topic auto-created after consumer subscribed | Already fixed via `subscribe.fromBeginning: true` in `notification-service/src/main.ts` |
 | Port `5432`/`9092`/`8080` already in use | Another local service is bound | Stop the conflicting service or change the host-side port in `docker-compose.yml` |
-
----
-
-## Deliverables checklist (against the lab spec)
-
-- [x] All five services implemented (`catalog`, `stock`, `order`, `notification`, `query`)
-- [x] Shared `proto/stock.proto` used by both gRPC server and client
-- [x] `docker-compose.yml` for Postgres, Zookeeper, Kafka, and the gateway
-- [x] Per-service ports documented and overridable via env
-- [x] DTO validation on every public REST endpoint
-- [x] Seed data in `catalog-service`
-- [x] Synchronous gRPC stock check before persisting an order
-- [x] Async Kafka event on `order.created`
-- [x] Kafka consumer in `notification-service` that timestamps & logs
-- [x] GraphQL `products`, `orders`, `orderById` queries (code-first schema)
-- [x] Technical justification for each protocol (this README)
-
-**Bonuses claimed:**
-- [x] **API Gateway** — nginx reverse-proxy on `:8080` (`/products`, `/orders`, `/graphql`)
-- [x] **PostgreSQL** instead of SQLite for `catalog-service` and `order-service`
-- [x] One-command bring-up (`pnpm dev`) that orchestrates infra + 5 services
-
----
-
-## License
-
-UNLICENSED — academic lab.
