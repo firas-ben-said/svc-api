@@ -1,0 +1,66 @@
+{
+  "$schema": "https://json.schemastore.org/nest-cli",
+  "collection": "@nestjs/schematics",
+  "monorepo": true,
+  "root": "catalog-service",
+  "sourceRoot": "catalog-service/src",
+  "compilerOptions": {
+    "deleteOutDir": true,
+    "assets": [
+      { "include": "**/*.proto", "outDir": "dist/apps", "watchAssets": true }
+    ]
+  },
+  "projects": {
+    "catalog-service": {
+      "type": "application",
+      "root": "catalog-service",
+      "entryFile": "main",
+      "sourceRoot": "catalog-service/src",
+      "compilerOptions": {
+        "tsConfigPath": "catalog-service/tsconfig.app.json"
+      }
+    },
+    "stock-service": {
+      "type": "application",
+      "root": "stock-service",
+      "entryFile": "main",
+      "sourceRoot": "stock-service/src",
+      "compilerOptions": {
+        "tsConfigPath": "stock-service/tsconfig.app.json",
+        "assets": [
+          { "include": "../proto/*.proto", "outDir": "dist/stock-service/proto" }
+        ]
+      }
+    },
+    "order-service": {
+      "type": "application",
+      "root": "order-service",
+      "entryFile": "main",
+      "sourceRoot": "order-service/src",
+      "compilerOptions": {
+        "tsConfigPath": "order-service/tsconfig.app.json",
+        "assets": [
+          { "include": "../proto/*.proto", "outDir": "dist/order-service/proto" }
+        ]
+      }
+    },
+    "notification-service": {
+      "type": "application",
+      "root": "notification-service",
+      "entryFile": "main",
+      "sourceRoot": "notification-service/src",
+      "compilerOptions": {
+        "tsConfigPath": "notification-service/tsconfig.app.json"
+      }
+    },
+    "query-service": {
+      "type": "application",
+      "root": "query-service",
+      "entryFile": "main",
+      "sourceRoot": "query-service/src",
+      "compilerOptions": {
+        "tsConfigPath": "query-service/tsconfig.app.json"
+      }
+    }
+  }
+}

@@ -1,0 +1,74 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: tp-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: tp_microservices
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres -d tp_microservices']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.6.1
+    container_name: tp-zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    healthcheck:
+      # /dev/tcp is a bash builtin — reliable across the Confluent images that
+      # bundle bash. Just probe that the client port is accepting connections.
+      test: ['CMD-SHELL', 'bash -c "</dev/tcp/localhost/2181"']
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 10s
+
+  kafka:
+    image: confluentinc/cp-kafka:7.6.1
+    container_name: tp-kafka
+    depends_on:
+      zookeeper:
+        condition: service_healthy
+    ports:
+      - '9092:9092'
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'true'
+    healthcheck:
+      # `kafka-consumer-groups --list` requires the group coordinator to be live,
+      # which in turn requires the internal `__consumer_offsets` topic to have
+      # elected a leader. `kafka-broker-api-versions` would return success well
+      # before that, causing the "group coordinator not available" race on first
+      # connect from consumers.
+      test: ['CMD-SHELL', 'kafka-consumer-groups --bootstrap-server localhost:9092 --list >/dev/null 2>&1']
+      interval: 5s
+      timeout: 10s
+      retries: 40
+      start_period: 25s
+
+  nginx:
+    image: nginx:alpine
+    container_name: tp-nginx
+    ports:
+      - '8080:8080'
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    extra_hosts:
+      - 'host.docker.internal:host-gateway'
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
